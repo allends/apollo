@@ -4,9 +4,9 @@
 
 **Goal:** Build Apollo's first useful vertical slice: detect Pi skill usage, observe the resulting agent turn until true completion, and run asynchronous session-scoped analysis.
 
-**Architecture:** Apollo should be session-first, not database-first. A small observer subscribes to Pi harness events, records a `SkillRun` in ephemeral session state, treats `AskUserQuestion` as a non-terminal awaiting-user state, and schedules a post-run analyzer after the harness settles.
+**Architecture:** Apollo should be session-first, not database-first. A small observer registers documented Pi extension events, records a `SkillRun` in ephemeral session state, treats `AskUserQuestion` as a non-terminal awaiting-user state, and schedules a post-run analyzer after Pi emits `agent_end`.
 
-**Tech Stack:** TypeScript, Pi `AgentHarness` event shapes by structural typing, Node test runner, no database.
+**Tech Stack:** TypeScript, Pi coding-agent `ExtensionAPI`, Node test runner, no database.
 
 ---
 
@@ -15,11 +15,11 @@
 - Apollo repo exists at `allends/apollo`.
 - Current scaffold has generic event/store/extension modules and a SQLite placeholder.
 - Pi reference repo shows relevant harness seams:
-  - `AgentHarness.skill(name, additionalInstructions?)` formats a skill prompt and calls `executeTurn`.
-  - `before_agent_start` includes `prompt` and `resources`.
+  - Pi extensions export `default function (pi: ExtensionAPI)` and register handlers with `pi.on(...)`.
+  - `input` can see raw `/skill:name` before expansion; `before_agent_start` includes `prompt` and `systemPromptOptions.skills` after expansion.
   - `tool_call` / `tool_result` expose tool lifecycle metadata.
-  - `turn_end` emits a save point.
-  - `agent_end` makes harness idle and emits `settled`.
+  - `turn_end` is one LLM response + tool-call cycle and is too early for final analysis.
+  - `agent_end` fires once per user prompt and is the documented boundary for post-run analysis.
 - `AskUserQuestion` appears as a Claude Code-compatible tool name in Pi provider code. Apollo should treat it as an intermediate awaiting-user signal, not a completed run.
 
 ## Task 1: Add skill-run domain types
@@ -147,16 +147,16 @@
 
 **Steps:**
 
-1. Define a structural `ObservableHarness` with `subscribe(listener): () => void`.
-2. Implement `installApolloSkillTurnObserver({ harness, apollo, analyzer? })`.
+1. Define observer install options around Pi coding-agent `ExtensionAPI` (`pi.on(...)`) instead of raw `AgentHarness.subscribe(...)`.
+2. Implement `installApolloSkillTurnObserver({ pi, apollo, analyzer? })`.
 3. On `before_agent_start`, detect skill and call `startRun`.
 4. On `tool_call` and `tool_result`, append redacted events to the active run.
 5. If tool name is `AskUserQuestion` / `ask-user`, mark run `awaiting_user` but keep it active.
-6. On `settled`, complete the active run and schedule analyzer via `queueMicrotask` or a Promise chain.
+6. On `agent_end`, complete the active run and schedule analyzer via `queueMicrotask` or a Promise chain.
 7. Capture analyzer errors on the run instead of throwing through the harness listener.
 8. Return unsubscribe/cleanup function.
 
-**Verification:** Test simulates events in order and proves analysis runs only after `settled`, not at ask-user.
+**Verification:** Test simulates Pi extension events in order and proves analysis runs only after `agent_end`, not at `turn_end` or ask-user.
 
 ## Task 7: Update optional extension tools to inspect skill runs
 
@@ -192,7 +192,7 @@
 
 **Steps:**
 
-1. Show `installApolloSkillTurnObserver({ harness, apollo })` in the example.
+1. Show `installApolloSkillTurnObserver({ pi, apollo })` in the extension example.
 2. Explain the ask-user/non-terminal behavior.
 3. Remove database-first language.
 4. Mention later persistence options: Pi local sessions first, storage adapter only if needed.

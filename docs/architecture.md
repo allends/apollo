@@ -9,12 +9,12 @@ The current architecture is intentionally smaller than the original `openclaw-he
 The first logical implementation is the **skill-turn observer**.
 
 ```text
-Pi harness skill(name, instructions)
+Pi documented extension event stream
   -> Apollo detects skill invocation
   -> Apollo records a session-scoped SkillRun
   -> Pi agent runs normally
   -> AskUserQuestion may occur, but does not finalize the run
-  -> harness/agent settles
+  -> Pi emits `agent_end`
   -> Apollo snapshots the completed turn
   -> async analyzer runs without blocking the UI
   -> analysis result attaches to the session-scoped SkillRun
@@ -28,10 +28,10 @@ Pi harness skill(name, instructions)
 
 Responsibilities:
 
-- Subscribe to Pi harness events.
+- Register Pi extension handlers with `pi.on(...)`.
 - Detect explicit skill invocation from the `before_agent_start` prompt and resource snapshot.
 - Track tool calls/results during the active skill run.
-- Treat `settled` / true agent idle as the end boundary.
+- Treat `agent_end` / true agent-run completion as the end boundary.
 - Avoid ending the run on `AskUserQuestion` when the harness exposes that as a tool call or tool result.
 
 The observer should be a thin lifecycle coordinator. It should not perform analysis or persistence itself.
@@ -89,16 +89,16 @@ It should consume analyzer findings and stage reviewable skill/instruction updat
 
 ## Integration seams from Pi
 
-Current Pi reference points:
+Current Pi documented extension points:
 
-- `AgentHarness.skill(name, additionalInstructions?)` creates a turn using `formatSkillInvocation(...)`.
-- `before_agent_start` includes the formatted prompt and the turn resource snapshot.
-- `tool_call` and `tool_result` expose tool lifecycle events, including likely `AskUserQuestion` events under Claude Code compatibility.
-- `turn_end` causes a save point.
-- `agent_end` makes the harness idle and emits `settled`.
-- `settled` includes `nextTurnCount`, which can indicate queued follow-up work.
+- Extensions export `default function (pi: ExtensionAPI)`.
+- `input` fires before skill/template expansion and can see raw `/skill:name` input.
+- `before_agent_start` fires after expansion and exposes the prompt plus `systemPromptOptions.skills`.
+- `tool_call` and `tool_result` expose tool lifecycle events, including likely `AskUserQuestion` under Claude Code compatibility.
+- `turn_end` fires after one LLM response + tool calls; this is not the final run boundary.
+- `agent_end` fires once per user prompt with the messages from that prompt and is the right first boundary for asynchronous post-run analysis.
 
-Apollo should prefer these public-ish harness events over monkey-patching internals. If the host can pass richer callbacks later, the observer adapter can use them without changing analyzer/session modules.
+Apollo should use the documented Pi coding-agent extension API (`export default function (pi: ExtensionAPI)`, `pi.on(...)`, `pi.registerTool(...)`) rather than raw `AgentHarness.subscribe(...)`. The lower-level harness notes are useful for understanding lifecycle semantics, but the installable extension adapter should speak Pi’s public extension API.
 
 ## Data model for the first slice
 

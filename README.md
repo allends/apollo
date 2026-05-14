@@ -40,7 +40,7 @@ import { createApollo, installApolloSkillTurnObserver } from "apollo";
 const apollo = createApollo();
 
 installApolloSkillTurnObserver({
-  harness,
+  pi,
   apollo,
 });
 ```
