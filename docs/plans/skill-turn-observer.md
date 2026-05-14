@@ -54,10 +54,10 @@
 **Implementation:**
 
 - Maintain `SkillRun[]`.
-- Statuses: `active`, `awaiting_user`, `completed`, `failed`.
-- `AskUserQuestion` moves to `awaiting_user` but does not complete.
+- Statuses: `active`, `completed`, `failed`.
+- No tool call gets special completion handling; `agent_end` is the only completion boundary.
 
-**Verification:** Unit tests prove `turn_end` and ask-user do not complete the run.
+**Verification:** Unit tests prove `turn_end` does not complete the run.
 
 ## Task 4: Pi event observer
 

@@ -4,7 +4,6 @@ import type { SkillRun, SkillRunAnalysis, SkillRunSnapshot } from "./types.js";
 export interface SkillRunState {
   start(skillName: string): SkillRunSnapshot;
   append(event: ApolloEvent): void;
-  markAwaitingUser(): void;
   complete(): SkillRunSnapshot | undefined;
   fail(error: unknown): SkillRunSnapshot | undefined;
   attachAnalysis(runId: string, analysis: SkillRunAnalysis): void;
@@ -30,10 +29,6 @@ export function createSkillRunState(): SkillRunState {
     append(event) {
       const run = activeRun(runs);
       if (run) run.events.push(event);
-    },
-    markAwaitingUser() {
-      const run = activeRun(runs);
-      if (run && run.status === "active") run.status = "awaiting_user";
     },
     complete() {
       const run = activeRun(runs);
@@ -67,7 +62,7 @@ export function createSkillRunState(): SkillRunState {
 function activeRun(runs: SkillRun[]): SkillRun | undefined {
   for (let index = runs.length - 1; index >= 0; index -= 1) {
     const run = runs[index]!;
-    if (run.status === "active" || run.status === "awaiting_user") return run;
+    if (run.status === "active") return run;
   }
   return undefined;
 }

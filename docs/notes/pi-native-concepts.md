@@ -12,7 +12,7 @@ Useful Pi concepts for the first Apollo version:
 
 - `input`: fires before skill/template expansion. This is the simplest way to detect raw `/skill:name` usage.
 - `before_agent_start`: fires after expansion and includes `systemPromptOptions.skills`. This is the fallback when skill usage is already expanded before Apollo sees input.
-- `tool_call`: fires before tool execution and can identify `AskUserQuestion`.
+- `tool_call`: fires before tool execution and records observed tool activity.
 - `tool_result`: captures tool error status and completion.
 - `turn_end`: one LLM response + tool cycle. Useful as an observed event, but too early for final analysis.
 - `agent_end`: once per user prompt. Best first-version boundary for asynchronous skill-run analysis.

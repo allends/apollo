@@ -22,23 +22,23 @@ class FakePi implements PiExtensionAPI {
   }
 }
 
-test("observer completes only on agent_end and treats ask-user as non-terminal", async () => {
+test("observer completes only on agent_end", async () => {
   const pi = new FakePi();
   const apollo = createApollo();
   installApolloSkillTurnObserver({ pi, apollo });
 
   await pi.emit("input", { text: "/skill:review check this" });
   await pi.emit("before_agent_start", { prompt: "expanded" });
-  await pi.emit("tool_call", { toolCallId: "1", toolName: "AskUserQuestion" });
+  await pi.emit("tool_call", { toolCallId: "1", toolName: "Read" });
   await pi.emit("turn_end", {});
 
-  assert.equal(apollo.skillRuns.current()?.status, "awaiting_user");
+  assert.equal(apollo.skillRuns.current()?.status, "active");
 
   await pi.emit("agent_end", {});
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   const [run] = apollo.skillRuns.all();
   assert.equal(run?.status, "completed");
-  assert.equal(run?.analysis?.outcome, "asked_user");
+  assert.equal(run?.analysis?.outcome, "completed");
   assert.deepEqual(pi.commandNames, ["apollo"]);
 });

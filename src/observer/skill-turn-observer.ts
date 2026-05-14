@@ -29,14 +29,12 @@ export function installApolloSkillTurnObserver({
 
   pi.on("tool_call", async (event) => {
     if (!apollo.skillRuns.current()) return;
-    const isAskUser = isAskUserTool(event.toolName);
     apollo.skillRuns.append({
-      type: isAskUser ? "ask_user" : "tool_call",
+      type: "tool_call",
       timestamp: new Date().toISOString(),
       toolName: event.toolName,
       toolCallId: event.toolCallId,
     });
-    if (isAskUser) apollo.skillRuns.markAwaitingUser();
   });
 
   pi.on("tool_result", async (event) => {
@@ -78,9 +76,4 @@ export function installApolloSkillTurnObserver({
       ctx.ui?.notify(message, "info");
     },
   });
-}
-
-function isAskUserTool(toolName: string): boolean {
-  const normalized = toolName.toLowerCase().replace(/[_\s-]/g, "");
-  return normalized === "askuser" || normalized === "askuserquestion";
 }

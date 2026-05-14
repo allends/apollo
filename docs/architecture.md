@@ -12,7 +12,7 @@ Pi package loads extensions/apollo.ts
   -> input sees /skill:name when present
   -> before_agent_start confirms expanded skill invocation
   -> tool_call/tool_result record lightweight signals
-  -> AskUserQuestion marks awaiting_user but does not complete the run
+  -> Apollo waits for agent_end before analyzing the run
   -> turn_end is recorded as intermediate lifecycle only
   -> agent_end completes the run
   -> async analyzer attaches a session-local finding

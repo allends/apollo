@@ -1,14 +1,6 @@
 import type { SkillRunAnalysis, SkillRunSnapshot } from "../session/types.js";
 
 export async function analyzeSkillRun(snapshot: SkillRunSnapshot): Promise<SkillRunAnalysis> {
-  if (snapshot.events.some((event) => event.type === "ask_user")) {
-    return {
-      outcome: "asked_user",
-      summary: `${snapshot.skillName} asked the user for context and should resume after the answer.`,
-      signals: ["ask_user"],
-    };
-  }
-
   if (snapshot.events.some((event) => event.isError === true)) {
     return {
       outcome: "tool_error",

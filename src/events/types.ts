@@ -1,4 +1,4 @@
-export type ApolloEventType = "tool_call" | "tool_result" | "turn_end" | "agent_end" | "ask_user";
+export type ApolloEventType = "tool_call" | "tool_result" | "turn_end" | "agent_end";
 
 export interface ApolloEvent {
   type: ApolloEventType;

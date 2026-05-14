@@ -9,7 +9,7 @@ Apollo v1 observes skill-run lifecycle only. It should not change assistant beha
 - Do not inject LLM-visible context automatically.
 - Do not auto-edit skills or instructions.
 - Do not run background work after Pi shuts down the session.
-- Treat `AskUserQuestion` as non-terminal; wait for Pi's `agent_end` boundary.
+- Wait for Pi's `agent_end` boundary before analyzing a run.
 
 ## Later proposal work
 
