@@ -11,7 +11,7 @@ export function createMemoryStore(): ApolloStore {
     },
     async searchSessions(query, limit = 10) {
       const q = query.toLowerCase();
-      const ids = [...new Set(events.filter((e) => JSON.stringify(e).toLowerCase().includes(q)).map((e) => e.sessionId))];
+      const ids = Array.from(new Set(events.filter((e) => JSON.stringify(e).toLowerCase().includes(q)).map((e) => e.sessionId)));
       return ids.slice(0, limit).map((id) => sessionFromEvents(id, events));
     },
     async getSession(sessionId) {

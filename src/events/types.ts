@@ -7,7 +7,8 @@ export type ApolloEventType =
   | "task.outcome_recorded"
   | "summary.generated"
   | "proposal.staged"
-  | "proposal.applied";
+  | "proposal.applied"
+  | "host.event";
 
 export interface ApolloEvent {
   id?: string;

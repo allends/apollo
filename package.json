@@ -1,1 +1,34 @@
-{"name":"apollo","version":"0.1.0","description":"Portable self-learning loop extension for Pi editors","type":"module","private":false,"license":"MIT","main":"./dist/index.js","types":"./dist/index.d.ts","exports":{".":{"types":"./dist/index.d.ts","import":"./dist/index.js"}},"files":["dist","README.md","docs"],"scripts":{"build":"tsc -p tsconfig.json","typecheck":"tsc --noEmit -p tsconfig.json","test":"node --test dist/tests/*.test.js","pretest":"npm run build"},"peerDependencies":{"@mariozechner/pi-ai":"*"},"devDependencies":{"typescript":"^5.9.3","@types/node":"^22.15.0"},"optionalDependencies":{"better-sqlite3":"^11.10.0"}}
+{
+  "name": "apollo",
+  "version": "0.1.0",
+  "description": "Portable self-learning loop extension for Pi editors",
+  "type": "module",
+  "private": false,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test dist/tests/*.test.js",
+    "pretest": "npm run build"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^22.15.0"
+  }
+}
