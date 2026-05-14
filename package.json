@@ -1,7 +1,7 @@
 {
   "name": "apollo",
   "version": "0.1.0",
-  "description": "Portable self-learning loop extension for Pi editors",
+  "description": "Pi-native skill-turn observer extension",
   "type": "module",
   "private": false,
   "license": "MIT",
@@ -9,14 +9,15 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
     }
   },
   "files": [
     "dist",
-    "README.md",
-    "docs"
+    "extensions",
+    "docs",
+    "README.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -25,10 +26,20 @@
     "pretest": "npm run build"
   },
   "peerDependencies": {
-    "@earendil-works/pi-ai": "*"
+    "@earendil-works/pi-coding-agent": "*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
     "@types/node": "^22.15.0"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "apollo"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ]
   }
 }

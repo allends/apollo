@@ -1,15 +1,17 @@
-import { APOLLO_EXTENSION, createApollo, installApolloSkillTurnObserver } from "../src/index.js";
+import { createApollo, installApolloSkillTurnObserver } from "../src/index.js";
+import type { PiContext, PiExtensionAPI } from "../src/observer/types.js";
 
-const apollo = createApollo({ sessionId: "current" });
-const extension = APOLLO_EXTENSION(apollo);
-
-// In a real Pi editor, pass the AgentHarness instance here.
-const harness = {
-  subscribe() {
-    return () => undefined;
+const handlers = new Map<string, Array<(event: never, ctx: PiContext) => void | Promise<void>>>();
+const pi = {
+  on(event: string, handler: (event: never, ctx: PiContext) => void | Promise<void>) {
+    handlers.set(event, [...(handlers.get(event) ?? []), handler]);
   },
-};
+  registerCommand(name: string) {
+    console.log(`registered /${name}`);
+  },
+} satisfies PiExtensionAPI;
 
-installApolloSkillTurnObserver({ harness, apollo });
+const apollo = createApollo();
+installApolloSkillTurnObserver({ pi, apollo });
 
-console.log(`Register ${extension.name} with ${extension.tools.length} optional inspection tools.`);
+console.log("Apollo extension observer installed", handlers.size);

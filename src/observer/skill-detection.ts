@@ -1,25 +1,12 @@
-export interface DetectedSkillInvocation {
-  skillName: string;
-  skillFilePath?: string;
+export function detectSkillCommand(input: string): string | undefined {
+  const match = /^\/skill:([^\s]+)/.exec(input.trim());
+  return match?.[1];
 }
 
-export interface SkillResource {
-  name: string;
-  filePath?: string;
-}
+export function detectExpandedSkill(prompt: string, skills: Array<{ name: string; filePath?: string }> = []): string | undefined {
+  const match = /^<skill name="([^"]+)" location="[^"]*">/.exec(prompt.trimStart());
+  if (match?.[1]) return match[1];
 
-const SKILL_PROMPT_RE = /^<skill name="([^"]+)" location="([^"]*)">/;
-
-export function detectSkillInvocation(prompt: string, skills: SkillResource[] = []): DetectedSkillInvocation | null {
-  const match = SKILL_PROMPT_RE.exec(prompt.trimStart());
-  if (!match) return null;
-
-  const skillName = match[1]!;
-  const promptPath = match[2] || undefined;
-  const resource = skills.find((skill) => skill.name === skillName);
-
-  return {
-    skillName,
-    skillFilePath: resource?.filePath ?? promptPath,
-  };
+  const namedSkill = skills.find((skill) => prompt.includes(`<skill name="${skill.name}"`));
+  return namedSkill?.name;
 }

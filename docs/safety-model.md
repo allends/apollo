@@ -1,19 +1,26 @@
 # Safety Model
 
-Apollo changes assistant behavior only through reviewable proposals.
+Apollo v1 observes skill-run lifecycle only. It should not change assistant behavior.
 
-## Hard rules
+## V1 hard rules
 
-- Keep raw history local by default.
-- Redact credential-like keys and values before storage.
-- Never silently mutate active instructions or skills.
-- Never broaden tool permissions automatically.
-- Preserve rationale, evidence, risk level, diff, verification, and rollback notes for proposals.
+- Do not persist raw transcript content.
+- Do not store secrets, tokens, cookies, or credential-like values.
+- Do not inject LLM-visible context automatically.
+- Do not auto-edit skills or instructions.
+- Do not run background work after Pi shuts down the session.
+- Treat `AskUserQuestion` as non-terminal; wait for Pi's `agent_end` boundary.
 
-## Risk levels
+## Later proposal work
 
-- **Low:** wording clarifications, trigger improvements, recovery notes.
-- **Medium:** new workflow instructions, changed defaults, new tool policy.
-- **High:** permission changes, external side effects, deletion behavior, security/auth handling.
+If Apollo later stages skill/instruction improvements, every proposal must include:
 
-High-risk proposals require explicit human approval outside the background loop.
+- target file/path
+- patch/diff
+- rationale
+- evidence references
+- risk level
+- verification step
+- rollback note
+
+High-risk proposals require explicit human approval.

@@ -1,20 +1,18 @@
 import type { SkillRunAnalysis, SkillRunSnapshot } from "../session/types.js";
 
 export async function analyzeSkillRun(snapshot: SkillRunSnapshot): Promise<SkillRunAnalysis> {
-  const usedAskUser = snapshot.events.some((event) => isAskUserTool(String(event.payload?.toolName ?? event.payload?.name ?? "")));
-  if (usedAskUser) {
+  if (snapshot.events.some((event) => event.type === "ask_user")) {
     return {
       outcome: "asked_user",
-      summary: `${snapshot.skillName} asked the user for more context during the turn.`,
+      summary: `${snapshot.skillName} asked the user for context and should resume after the answer.`,
       signals: ["ask_user"],
     };
   }
 
-  const hadToolError = snapshot.events.some((event) => event.payload?.isError === true);
-  if (hadToolError) {
+  if (snapshot.events.some((event) => event.isError === true)) {
     return {
       outcome: "tool_error",
-      summary: `${snapshot.skillName} encountered a tool error during the turn.`,
+      summary: `${snapshot.skillName} hit a tool error during the run.`,
       signals: ["tool_error"],
     };
   }
@@ -22,19 +20,14 @@ export async function analyzeSkillRun(snapshot: SkillRunSnapshot): Promise<Skill
   if (snapshot.events.length > 0) {
     return {
       outcome: "completed",
-      summary: `${snapshot.skillName} completed with ${snapshot.events.length} observed events.`,
+      summary: `${snapshot.skillName} completed after ${snapshot.events.length} observed lifecycle events.`,
       signals: ["completed"],
     };
   }
 
   return {
     outcome: "unknown",
-    summary: `${snapshot.skillName} completed without enough observed events to classify the outcome.`,
+    summary: `${snapshot.skillName} ended without enough observed events to classify.`,
     signals: [],
   };
-}
-
-export function isAskUserTool(toolName: string): boolean {
-  const normalized = toolName.toLowerCase().replace(/[_\s-]/g, "");
-  return normalized === "askuser" || normalized === "askuserquestion";
 }

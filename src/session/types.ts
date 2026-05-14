@@ -10,9 +10,7 @@ export interface SkillRunAnalysis {
 
 export interface SkillRun {
   id: string;
-  sessionId: string;
   skillName: string;
-  skillFilePath?: string;
   status: SkillRunStatus;
   startedAt: string;
   endedAt?: string;
@@ -22,9 +20,3 @@ export interface SkillRun {
 }
 
 export type SkillRunSnapshot = Readonly<Omit<SkillRun, "events"> & { events: readonly ApolloEvent[] }>;
-
-export interface StartSkillRunInput {
-  sessionId: string;
-  skillName: string;
-  skillFilePath?: string;
-}

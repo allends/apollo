@@ -1,57 +1,41 @@
 # Apollo
 
-Apollo is a portable learning-loop extension for Pi editors.
+Apollo is a small Pi-native extension for observing skill-driven agent runs.
 
-Apollo is intentionally **not** a fork of the Pi coding agent. It is the small installable layer that any Pi editor/runtime can add to observe skill-driven turns, run asynchronous end-of-turn analysis, and stage reviewable improvements.
+It is intentionally **not** a fork of Pi and not a separate agent framework. The first version uses Pi's documented extension API and keeps all state in memory for the active session.
 
-## First module: skill-turn observer
+## First version
 
-The first logical implementation is a **skill-turn observer**:
+Apollo does one thing:
 
-1. Detect when a Pi skill is invoked.
-2. Track the current skill-bound agent turn in session memory.
-3. Wait for the real end of the agent run/turn.
-4. Run a non-blocking asynchronous analyzer over the completed turn.
-5. Store results on the active session for now, not in a database.
+1. Notices when a `/skill:name` command or expanded skill prompt starts an agent run.
+2. Watches Pi lifecycle events for that run.
+3. Treats `AskUserQuestion` as `awaiting_user`, not as completion.
+4. Waits for Pi's documented `agent_end` event.
+5. Runs a tiny async analyzer and keeps the finding on the session-local run list.
 
-Important nuance: `AskUserQuestion` / ask-user should **not** be treated as the end of the agent turn when Pi exposes enough event state to tell the difference. A skill turn is complete when the harness/agent settles, not merely when the assistant asks the user for more information.
+No database. No proposal engine. No custom storage layer.
 
-## Goals
+## Pi-native pieces used
 
-- Install into any Pi editor/runtime as an extension.
-- Use Pi harness/session niceties instead of owning the whole persistence layer.
-- Keep the first pass session-scoped and ephemeral.
-- Use local session history only when a module needs deeper context.
-- Keep extension modules small and replaceable.
+- `export default function (pi)` package extension entrypoint.
+- `pi.on("input")` to catch raw `/skill:name` before expansion.
+- `pi.on("before_agent_start")` to catch expanded skill prompts and loaded skill metadata.
+- `pi.on("tool_call")` and `pi.on("tool_result")` for observed tool activity.
+- `pi.on("turn_end")` as an intermediate event only.
+- `pi.on("agent_end")` as the first-version completion boundary.
+- `pi.registerCommand("apollo")` for a minimal session-local status command.
 
-## Non-goals
+## Install shape
 
-- Do not vendor or fork the whole Pi agent/editor.
-- Do not build a database before the session-scoped loop proves useful.
-- Do not silently rewrite active instructions.
-- Do not broaden tool permissions automatically.
-- Do not store secrets, cookies, tokens, or raw credential-like values.
+Apollo declares a Pi package manifest in `package.json`:
 
-## Package shape
-
-```ts
-import { createApollo, installApolloSkillTurnObserver } from "apollo";
-
-const apollo = createApollo();
-
-installApolloSkillTurnObserver({
-  pi,
-  apollo,
-});
+```json
+{
+  "pi": {
+    "extensions": ["./extensions"]
+  }
+}
 ```
 
-## Module boundaries
-
-- `src/observer/` — subscribes to Pi harness events and detects skill turns.
-- `src/session/` — in-memory session state for observed skill runs and analyzer outputs.
-- `src/analyzer/` — async end-of-turn analysis pipeline.
-- `src/events/` — normalized Apollo event types and redaction.
-- `src/extension/` — optional tool/extension adapter exposed to Pi editors.
-- `src/proposals/` — later reviewable improvement proposals.
-
-See `docs/architecture.md`, `docs/implementation-plan.md`, and `docs/plans/skill-turn-observer.md`.
+That lets Pi load `extensions/apollo.ts` when installed from git/local path.
