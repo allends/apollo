@@ -2,8 +2,6 @@
 
 Apollo is a small Pi-native extension for observing skill-driven agent runs.
 
-It is intentionally **not** a fork of Pi and not a separate agent framework. The first version uses Pi's documented extension API and keeps all state in memory for the active session.
-
 ## First version
 
 Apollo does one thing:
@@ -12,8 +10,6 @@ Apollo does one thing:
 2. Watches Pi lifecycle events for that run.
 3. Waits for Pi's documented `agent_end` event.
 4. Runs a tiny async analyzer and keeps the finding on the session-local run list.
-
-No database. No proposal engine. No custom storage layer.
 
 ## Pi-native pieces used
 
